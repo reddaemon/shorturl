@@ -1,6 +1,7 @@
 package shorturl
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	u "net/url"
@@ -22,6 +23,8 @@ func (ur Url) Shorten(url string) (string, error) {
 	if !strings.Contains(url, "//") {
 		sbUrl.WriteString("https://")
 		sbUrl.WriteString(url)
+	} else {
+		sbUrl.WriteString(url)
 	}
 
 	temp, err := u.Parse(sbUrl.String())
@@ -30,6 +33,10 @@ func (ur Url) Shorten(url string) (string, error) {
 	}
 
 	log.Printf("temp: %s", temp)
+
+	if temp.Path == "" {
+		return "", errors.New("path is empty, nothing to do...please add path")
+	}
 
 	ur.Host = temp.Host
 	ur.Path = temp.Path
