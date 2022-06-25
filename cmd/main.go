@@ -1,5 +1,10 @@
 package main
 
+// 1. post большую - сокращенную
+// 2. get водим полученую сокращенную, редиректимся на большую (http codes)
+// 3. 1 запрос в секунду
+// сокращенную ссылка неодноразовая
+
 import (
 	"context"
 	"log"
@@ -7,6 +12,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"shorturl/internal/db"
+	"shorturl/internal/handlers"
+	"shorturl/internal/repository"
 	"shorturl/internal/router"
 	"syscall"
 	"time"
@@ -14,7 +22,16 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	r := router.RegisterRouter()
+
+	db := db.InitDB()
+	defer db.Close()
+	repo := repository.NewRepo(db)
+	err := repo.CreateBucket("Urls")
+	if err != nil {
+		log.Printf("cannot create bucket: %v", err)
+	}
+	h := handlers.NewHandler(repo)
+	r := router.RegisterRouter(h)
 
 	httpServer := &http.Server{
 		Addr:        ":8080",

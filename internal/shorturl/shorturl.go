@@ -1,7 +1,6 @@
 package shorturl
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	u "net/url"
@@ -16,7 +15,7 @@ type Url struct {
 	Scheme string
 }
 
-func (ur Url) Shorten(url string) (string, error) {
+func (ur Url) Shorten(url string) (string, string, error) {
 	var sbUrl strings.Builder
 	var sbShrlnk strings.Builder
 
@@ -29,18 +28,18 @@ func (ur Url) Shorten(url string) (string, error) {
 
 	temp, err := u.Parse(sbUrl.String())
 	if err != nil {
-		return "", err
+		return "", sbUrl.String(), err
 	}
 
 	log.Printf("temp: %s", temp)
 
-	if temp.Path == "" {
-		return "", errors.New("path is empty, nothing to do...please add path")
-	}
+	/*if temp.Path == "" {
+		return "", sbUrl.String(), errors.New("path is empty, nothing to do...please add path")
+	}*/
 
-	ur.Host = temp.Host
+	ur.Host = "localhost:8080"
 	ur.Path = temp.Path
-	ur.Scheme = temp.Scheme
+	ur.Scheme = "http"
 
 	hashSlice := []int{1}
 
@@ -59,5 +58,5 @@ func (ur Url) Shorten(url string) (string, error) {
 	sbShrlnk.WriteString(shrtlnk)
 
 	log.Printf("Result string: %s", sbShrlnk.String())
-	return sbShrlnk.String(), err
+	return sbShrlnk.String(), sbUrl.String(), err
 }
