@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/speps/go-hashids"
+	"shorturl/internal/utils"
 )
 
 type Url struct {
@@ -33,18 +34,15 @@ func (ur Url) Shorten(url string) (string, string, error) {
 
 	log.Printf("temp: %s", temp)
 
-	/*if temp.Path == "" {
-		return "", sbUrl.String(), errors.New("path is empty, nothing to do...please add path")
-	}*/
+	salt := utils.RandStringBytes(3)
 
 	ur.Host = "localhost:8080"
-	ur.Path = temp.Path
 	ur.Scheme = "http"
 
 	hashSlice := []int{1}
 
 	hd := hashids.NewData()
-	hd.Salt = ur.Path
+	hd.Salt = salt
 	h, err := hashids.NewWithData(hd)
 	if err != nil {
 		fmt.Println(err)

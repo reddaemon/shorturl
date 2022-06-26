@@ -6,6 +6,6 @@ type Shorturl interface {
 
 type Repo interface {
 	Set(short string, fullurl string) error
-	Get(short string) (string, error)
-	CreateBucket(name string) error
+	Get(BucketName string, short string) (fullurl []byte, err error)
+	CreateBucket(BucketName string) error
 }
