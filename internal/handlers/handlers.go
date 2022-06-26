@@ -27,7 +27,7 @@ func (h *Handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.repo.Set(shortlink, fullurl)
+	err = service.Repo.Set(&h.repo, shortlink, fullurl)
 	if err != nil {
 		log.Printf("Cannot get full url by short url: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -42,7 +42,7 @@ func (h *Handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetFull(w http.ResponseWriter, r *http.Request) {
 	short := r.URL.Query().Get("shorturl")
 
-	full, err := h.repo.Get("Urls", short)
+	full, err := service.Repo.Get(&h.repo, "Urls", short)
 	if err != nil {
 		log.Printf("Cannot get full url by short url: %v", err)
 		log.Printf("short, full: %v %v", short, full)
