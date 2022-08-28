@@ -1,13 +1,13 @@
 package db
 
 import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
-
-	"github.com/boltdb/bolt"
 )
 
-func InitDB() *bolt.DB {
-	db, err := bolt.Open("urls.db", 0600, nil)
+func InitDB() *sql.DB {
+	db, err := sql.Open("sqlite3", "urls")
 	if err != nil {
 		log.Fatal(err)
 	}
