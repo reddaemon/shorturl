@@ -3,54 +3,72 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"shorturl/internal/repository"
+
 	"shorturl/internal/service"
 	"shorturl/internal/shorturl"
 )
 
 type Handler struct {
-	repo repository.Repo
+	ServiceTool service.ServiceTool
+	Shortener   *shorturl.Url
 }
 
-func NewHandler(repo *repository.Repo) *Handler {
-	return &Handler{repo: *repo}
+type HandlerTool interface {
+	ShortHandler(w http.ResponseWriter, r *http.Request)
+	GetFull(w http.ResponseWriter, r *http.Request)
+}
+
+func NewHandler(serviceTool service.ServiceTool, shortener *shorturl.Url) *Handler {
+	return &Handler{
+		ServiceTool: serviceTool,
+		Shortener:   shortener,
+	}
 }
 
 func (h *Handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
-	var ur shorturl.Url
 
-	fullurl := r.URL.Query().Get("url")
+	fullUrl := r.URL.Query().Get("url")
 
-	shortlink, fullurl, err := service.Shorturl.Shorten(&ur, fullurl)
+	shortUrl, fullUrl, err := h.Shortener.Shorten(fullUrl)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	err = service.Repo.Set(&h.repo, shortlink, fullurl)
+	id, err := h.ServiceTool.SetLink(shortUrl, fullUrl)
 	if err != nil {
-		log.Printf("Cannot get full url by short url: %v", err)
+		log.Printf("Cannot save url to cache: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Cannot save shortlink: internal server error"))
+		_, err = w.Write([]byte("Cannot save shortlink: internal server error"))
+		if err != nil {
+			return
+		}
 		return
 	}
+	log.Printf("url saved, record id: %d", id)
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(shortlink))
+	_, err = w.Write([]byte(shortUrl))
+	if err != nil {
+		return
+	}
 }
 
 func (h *Handler) GetFull(w http.ResponseWriter, r *http.Request) {
-	short := r.URL.Query().Get("shorturl")
+	shortUrl := r.URL.Query().Get("shorturl")
 
-	full, err := service.Repo.Get(&h.repo, "Urls", short)
+	fullUrl, err := h.ServiceTool.GetLink(shortUrl)
 	if err != nil {
 		log.Printf("Cannot get full url by short url: %v", err)
-		log.Printf("short, full: %v %v", short, full)
+		log.Printf("short, full: %v %v", shortUrl, fullUrl)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Cannot get full url by short url: internal server error"))
+		_, err := w.Write([]byte("Cannot get full url by short url: internal server error"))
+		if err != nil {
+			return
+		}
 		return
 	}
 
-	http.Redirect(w, r, string(full), 301)
+	http.Redirect(w, r, fullUrl, 301)
 	w.WriteHeader(http.StatusOK)
 }

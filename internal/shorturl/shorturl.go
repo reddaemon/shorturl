@@ -1,14 +1,19 @@
 package shorturl
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	u "net/url"
 	"strings"
 
-	"github.com/speps/go-hashids"
 	"shorturl/internal/utils"
+
+	"github.com/speps/go-hashids"
 )
+
+type ShortenTool interface {
+	Shorten(url string) (string, string, error)
+}
 
 type Url struct {
 	Host   string
@@ -29,7 +34,7 @@ func (ur Url) Shorten(url string) (string, string, error) {
 
 	temp, err := u.Parse(sbUrl.String())
 	if err != nil {
-		return "", sbUrl.String(), err
+		return "", sbUrl.String(), errors.Wrapf(err, "cannot parse url")
 	}
 
 	log.Printf("temp: %s", temp)
@@ -41,14 +46,14 @@ func (ur Url) Shorten(url string) (string, string, error) {
 
 	hashSlice := []int{1}
 
-	hd := hashids.NewData()
-	hd.Salt = salt
-	h, err := hashids.NewWithData(hd)
+	hashIdData := hashids.NewData()
+	hashIdData.Salt = salt
+	hashId, err := hashids.NewWithData(hashIdData)
 	if err != nil {
-		fmt.Println(err)
+		return "", "", errors.Wrapf(err, "cannot get hash")
 	}
 
-	shrtlnk, _ := h.Encode(hashSlice)
+	shrtlnk, _ := hashId.Encode(hashSlice)
 	sbShrlnk.WriteString(ur.Scheme)
 	sbShrlnk.WriteString("://")
 	sbShrlnk.WriteString(ur.Host)

@@ -7,6 +7,8 @@ package main
 
 import (
 	"context"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +18,8 @@ import (
 	"shorturl/internal/handlers"
 	"shorturl/internal/repository"
 	"shorturl/internal/router"
+	"shorturl/internal/service"
+	"shorturl/internal/shorturl"
 	"syscall"
 	"time"
 )
@@ -23,14 +27,25 @@ import (
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	db := db.InitDB()
-	defer db.Close()
-	repo := repository.NewRepo(db)
-	err := repo.CreateBucket("Urls")
-	if err != nil {
-		log.Printf("cannot create bucket: %v", err)
+	database := db.InitDB()
+	defer func() {
+		_ = database.Close()
+	}()
+
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		panic(err)
 	}
-	h := handlers.NewHandler(repo)
+
+	if err := goose.Up(database, "./migrations"); err != nil {
+		panic(err)
+	}
+
+	repo := repository.NewRepo(database)
+	repoTool := repository.RepoTool(repo)
+
+	svc := service.NewService(repoTool)
+	shortener := &shorturl.Url{}
+	h := handlers.NewHandler(svc, shortener)
 	r := router.RegisterRouter(h)
 
 	httpServer := &http.Server{
@@ -42,7 +57,7 @@ func main() {
 	// Run server
 	go func() {
 		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			// it is fine to use Fatal here because it is not main gorutine
+			// it is fine to use Fatal here because it is not main goroutine
 			log.Fatalf("HTTP server ListenAndServe: %v", err)
 		}
 	}()
@@ -62,9 +77,9 @@ func main() {
 		log.Fatal("os.Kill - terminating...\n")
 	}()
 
-	gracefullCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	gracefulCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelShutdown()
-	if err := httpServer.Shutdown(gracefullCtx); err != nil {
+	if err := httpServer.Shutdown(gracefulCtx); err != nil {
 		log.Printf("shutdown error: %v\n", err)
 		defer os.Exit(1)
 		return
