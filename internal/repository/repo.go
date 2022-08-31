@@ -2,15 +2,15 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
+	"errors" // заменить на github.com/pkg/errors
 	"time"
 )
-
+// изменить название интерфейса
 type RepoTool interface {
 	Set(short string, fullUrl string) (id int64, err error)
 	Get(short string) (fullUrl string, err error)
 }
-
+// сделать структуру неэкспортируемой
 type Repo struct {
 	db *sql.DB
 }
@@ -20,7 +20,7 @@ func NewRepo(db *sql.DB) *Repo {
 		db: db,
 	}
 }
-
+// обернуть ошибки
 func (r *Repo) Set(short string, fullUrl string) (id int64, err error) {
 	query := "INSERT INTO urls(shortUrl,fullUrl,created) VALUES(?,?,?)"
 	stmt, err := r.db.Prepare(query)
