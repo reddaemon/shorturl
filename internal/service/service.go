@@ -5,15 +5,20 @@ import (
 	"shorturl/internal/repository"
 )
 
+// https://dave.cheney.net/practical-go/presentations/qcon-china.html
+
+// изменить название
 type ServiceTool interface {
 	SetLink(shortlink string, fullurl string) (id int64, err error)
 	GetLink(shorturl string) (string, error)
 }
 
+// сделать неэкспортирумым
 type Service struct {
-	RepoTool repository.RepoTool
+	RepoTool repository.RepoTool // сделать неэкспортирумым
 }
 
+// возвращать интерфейс, а не структуру
 func NewService(repoTool repository.RepoTool) *Service {
 	return &Service{
 		RepoTool: repoTool}
