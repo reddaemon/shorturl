@@ -7,17 +7,17 @@ import (
 	"shorturl/internal/service"
 	"shorturl/internal/shorturl"
 )
-
+// сделать неэкспортируемым
 type Handler struct {
 	ServiceTool service.ServiceTool
 	Shortener   *shorturl.Url
 }
-
+// изменить название
 type HandlerTool interface {
 	ShortHandler(w http.ResponseWriter, r *http.Request)
 	GetFull(w http.ResponseWriter, r *http.Request)
 }
-
+// shortener должен быть интерфейсом
 func NewHandler(serviceTool service.ServiceTool, shortener *shorturl.Url) *Handler {
 	return &Handler{
 		ServiceTool: serviceTool,
