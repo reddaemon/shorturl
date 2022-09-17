@@ -58,6 +58,13 @@ func (h *handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetFull(w http.ResponseWriter, r *http.Request) {
 	shortUrl := r.URL.Query().Get("shorturl")
+	if shortUrl == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte("required parameter shorturl didn't specified"))
+		if err != nil {
+			return
+		}
+	}
 
 	fullUrl, err := h.serviceTool.GetLink(shortUrl)
 	if err != nil {

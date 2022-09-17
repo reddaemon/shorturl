@@ -3,11 +3,9 @@ package handlers
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"shorturl/internal/service"
 	"shorturl/internal/service/serviceMocks"
 	"shorturl/internal/shorturl"
 	"testing"
@@ -27,15 +25,6 @@ var shortUrls = []struct {
 	{"http://localhost:8080/GJ"},
 	{"http://localhost:8080/vX"},
 	{"http://localhost:8080/78"},
-}
-
-type RepoTool interface {
-	Set(short string, fullUrl string) (id int64, err error)
-	Get(short string) (fullUrl string, err error)
-}
-
-type MockRepo struct {
-	mock.Mock
 }
 
 func TestShortHandler(t *testing.T) {
@@ -60,17 +49,16 @@ func TestShortHandler(t *testing.T) {
 }
 
 func TestGetFull(t *testing.T) {
-	mr := MockRepo{}
-	srv := service.Service{RepoTool: &mr}
+	serviceMock := serviceMocks.NewServiceTool(t)
 
 	var url shorturl.Url
+	handler := NewHandler(serviceMock, url)
 
-	handler := NewHandler(&srv, &url)
-
-	for _, e := range shortUrls {
+	for i, e := range shortUrls {
+		serviceMock.On("GetLink", e.url).Return(testUrls[i].url, nil)
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet,
-			fmt.Sprintf("/v1/shorturl/full?url=%s", e.url), nil)
+			fmt.Sprintf("/v1/shorturl/full?shorturl=%s", e.url), nil)
 
 		handler.GetFull(w, req)
 		res := w.Result()
@@ -80,12 +68,4 @@ func TestGetFull(t *testing.T) {
 		assert.Contains(t, string(resBody), "Moved Permanently")
 
 	}
-
-}
-
-func (mr *MockRepo) Set(short string, fullUrl string) (id int64, err error) {
-	return
-}
-func (mr *MockRepo) Get(short string) (fullUrl string, err error) {
-	return
 }

@@ -27,7 +27,7 @@ var getTests = []struct {
 
 func TestService_SetLink(t *testing.T) {
 	mockRepo := new(mocks.RepoTool)
-	service := Service{mockRepo}
+	service := service{mockRepo}
 
 	for _, e := range setTests {
 		mockRepo.On("Set", e.short, e.full).Return(int64(0), nil)
@@ -43,7 +43,7 @@ func TestService_SetLink(t *testing.T) {
 
 func TestService_GetLink(t *testing.T) {
 	mockRepo := new(mocks.RepoTool)
-	service := Service{mockRepo}
+	service := service{mockRepo}
 
 	for _, e := range getTests {
 		mockRepo.On("Get", e.short).Return(e.want, nil)
