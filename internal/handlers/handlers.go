@@ -7,35 +7,37 @@ import (
 	"shorturl/internal/service"
 	"shorturl/internal/shorturl"
 )
-// сделать неэкспортируемым
-type Handler struct {
-	ServiceTool service.ServiceTool
-	Shortener   *shorturl.Url
+
+type handler struct {
+	serviceTool service.ServiceTool
+	shortener   shorturl.ShortenTool
 }
-// изменить название
+
+// todo изменить название
 type HandlerTool interface {
 	ShortHandler(w http.ResponseWriter, r *http.Request)
 	GetFull(w http.ResponseWriter, r *http.Request)
 }
-// shortener должен быть интерфейсом
-func NewHandler(serviceTool service.ServiceTool, shortener *shorturl.Url) *Handler {
-	return &Handler{
-		ServiceTool: serviceTool,
-		Shortener:   shortener,
+
+func NewHandler(serviceTool service.ServiceTool,
+	shortener shorturl.ShortenTool) HandlerTool {
+	return &handler{
+		serviceTool: serviceTool,
+		shortener:   shortener,
 	}
 }
 
-func (h *Handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
+func (h *handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
 
 	fullUrl := r.URL.Query().Get("url")
 
-	shortUrl, fullUrl, err := h.Shortener.Shorten(fullUrl)
+	shortUrl, fullUrl, err := h.shortener.Shorten(fullUrl)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	id, err := h.ServiceTool.SetLink(shortUrl, fullUrl)
+	id, err := h.serviceTool.SetLink(shortUrl, fullUrl)
 	if err != nil {
 		log.Printf("Cannot save url to cache: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -54,10 +56,10 @@ func (h *Handler) ShortHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetFull(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetFull(w http.ResponseWriter, r *http.Request) {
 	shortUrl := r.URL.Query().Get("shorturl")
 
-	fullUrl, err := h.ServiceTool.GetLink(shortUrl)
+	fullUrl, err := h.serviceTool.GetLink(shortUrl)
 	if err != nil {
 		log.Printf("Cannot get full url by short url: %v", err)
 		log.Printf("short, full: %v %v", shortUrl, fullUrl)
