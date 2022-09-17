@@ -62,18 +62,16 @@ func TestGetFull(t *testing.T) {
 	serviceMock := serviceMocks.NewServiceTool(t)
 
 	var url shorturl.Url
-	handler := NewHandler(serviceMock, &url)
+	handler := NewHandler(serviceMock, url)
 
 	for i, e := range shortUrls {
-		mockCall := serviceMock.On("GetLink", e.url).Return(testUrls[i].url, nil)
-
+		serviceMock.On("GetLink", e.url).Return(testUrls[i].url, nil)
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet,
-			fmt.Sprintf("/v1/shorturl/full?url=%s", e.url), nil)
+			fmt.Sprintf("/v1/shorturl/full?shorturl=%s", e.url), nil)
 
 		handler.GetFull(w, req)
-		serviceMock.AssertExpectations(t)
-		mockCall.Unset()
+		//mockCall.Unset()
 		res := w.Result()
 		resBody, _ := io.ReadAll(res.Body)
 
@@ -81,7 +79,6 @@ func TestGetFull(t *testing.T) {
 		assert.Contains(t, string(resBody), "Moved Permanently")
 
 	}
-
 }
 
 func (mr *MockRepo) Set(short string, fullUrl string) (id int64, err error) {
