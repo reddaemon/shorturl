@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"shorturl/internal/service/serviceMocks"
+	"shorturl/internal/service/linkManagerMocks"
 	"shorturl/internal/shorturl"
 	"testing"
 )
@@ -28,13 +28,13 @@ var shortUrls = []struct {
 }
 
 func TestShortHandler(t *testing.T) {
-	serviceMock := serviceMocks.NewServiceTool(t)
+	linkManagerMock := linkManagerMocks.NewLinkManager(t)
 	var url shorturl.Url
 
 	w := httptest.NewRecorder()
-	handlers := NewHandler(serviceMock, &url)
+	handlers := NewHandler(linkManagerMock, &url)
 	for i, e := range testUrls {
-		serviceMock.On("SetLink", shortUrls[i].url, e.url).Return(int64(0), nil)
+		linkManagerMock.On("SetLink", shortUrls[i].url, e.url).Return(int64(0), nil)
 		req := httptest.NewRequest(http.MethodPost,
 			fmt.Sprintf("/v1/shorturl/short?url=%s", e.url), nil)
 		handler := http.HandlerFunc(handlers.ShortHandler)
@@ -49,13 +49,13 @@ func TestShortHandler(t *testing.T) {
 }
 
 func TestGetFull(t *testing.T) {
-	serviceMock := serviceMocks.NewServiceTool(t)
+	linkManagerMock := linkManagerMocks.NewLinkManager(t)
 
 	var url shorturl.Url
-	handler := NewHandler(serviceMock, url)
+	handler := NewHandler(linkManagerMock, url)
 
 	for i, e := range shortUrls {
-		serviceMock.On("GetLink", e.url).Return(testUrls[i].url, nil)
+		linkManagerMock.On("GetLink", e.url).Return(testUrls[i].url, nil)
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet,
 			fmt.Sprintf("/v1/shorturl/full?shorturl=%s", e.url), nil)

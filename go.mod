@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.14
 	github.com/pkg/errors v0.9.1
 	github.com/pressly/goose/v3 v3.6.1
-	github.com/speps/go-hashids v2.0.0+incompatible
+	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/stretchr/testify v1.8.0
 )
 

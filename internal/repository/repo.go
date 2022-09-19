@@ -6,26 +6,20 @@ import (
 	"time"
 )
 
-// todo изменить название интерфейса
-type RepoTool interface {
+type Repository interface {
 	Set(short string, fullUrl string) (id int64, err error)
 	Get(short string) (fullUrl string, err error)
 }
 
-type repo struct {
+type store struct {
 	db *sql.DB
 }
 
-func NewRepo(db *sql.DB) *repo {
-	return &repo{db: db}
+func NewRepository(db *sql.DB) Repository {
+	return &store{db: db}
 }
 
-func NewRepoTool(db *sql.DB) RepoTool {
-	return &repo{db: db}
-}
-
-// обернуть ошибки
-func (r *repo) Set(short string, fullUrl string) (id int64, err error) {
+func (r *store) Set(short string, fullUrl string) (id int64, err error) {
 	query := "INSERT INTO urls(shortUrl,fullUrl,created) VALUES(?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -42,7 +36,7 @@ func (r *repo) Set(short string, fullUrl string) (id int64, err error) {
 	return id, nil
 }
 
-func (r *repo) Get(short string) (fullUrl string, err error) {
+func (r *store) Get(short string) (fullUrl string, err error) {
 
 	query := "SELECT fullUrl FROM urls WHERE shortUrl = ?"
 	stmt, err := r.db.Prepare(query)

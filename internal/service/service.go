@@ -7,22 +7,21 @@ import (
 
 // https://dave.cheney.net/practical-go/presentations/qcon-china.html
 
-// todo изменить название
-type ServiceTool interface {
-	SetLink(shortlink string, fullurl string) (id int64, err error)
-	GetLink(shorturl string) (string, error)
+type LinkManager interface {
+	SetLink(shortLink string, fullUrl string) (id int64, err error)
+	GetLink(shortUrl string) (string, error)
 }
 
 type service struct {
-	repoTool repository.RepoTool
+	repository repository.Repository
 }
 
-func NewService(repoTool repository.RepoTool) ServiceTool {
-	return &service{repoTool: repoTool}
+func NewLinkManager(repoTool repository.Repository) LinkManager {
+	return &service{repository: repoTool}
 }
 
 func (s *service) SetLink(shortUrl string, fullUrl string) (id int64, err error) {
-	id, err = s.repoTool.Set(shortUrl, fullUrl)
+	id, err = s.repository.Set(shortUrl, fullUrl)
 	if err != nil {
 		return id, errors.Wrapf(err, "cannot save shortUrl, short and full: %s %s", shortUrl, fullUrl)
 	}
@@ -30,7 +29,7 @@ func (s *service) SetLink(shortUrl string, fullUrl string) (id int64, err error)
 }
 
 func (s *service) GetLink(shortUrl string) (fullUrl string, err error) {
-	fullUrl, err = s.repoTool.Get(shortUrl)
+	fullUrl, err = s.repository.Get(shortUrl)
 	if err != nil {
 		return fullUrl, errors.Wrapf(err, "cannot get fullUrl by shortUrl %s", shortUrl)
 	}
