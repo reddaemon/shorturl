@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/stretchr/testify/assert"
-	"shorturl/internal/repository/mocks"
+	"shorturl/internal/repository/repositoryMocks"
 	"testing"
 )
 
@@ -25,8 +25,8 @@ var getTests = []struct {
 	{"Urls", "http://localhost:8080/Sd", "https://mail.ru"},
 }
 
-func TestService_SetLink(t *testing.T) {
-	mockRepo := new(mocks.RepoTool)
+func TestSetLink(t *testing.T) {
+	mockRepo := repositoryMocks.NewRepository(t)
 	service := service{mockRepo}
 
 	for _, e := range setTests {
@@ -42,7 +42,7 @@ func TestService_SetLink(t *testing.T) {
 }
 
 func TestService_GetLink(t *testing.T) {
-	mockRepo := new(mocks.RepoTool)
+	mockRepo := new(repositoryMocks.Repository)
 	service := service{mockRepo}
 
 	for _, e := range getTests {

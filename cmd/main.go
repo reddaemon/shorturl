@@ -40,9 +40,9 @@ func main() {
 		panic(err)
 	}
 
-	repoTool := repository.NewRepoTool(database)
+	repo := repository.NewRepository(database)
 
-	svc := service.NewService(repoTool)
+	svc := service.NewLinkManager(repo)
 	shortener := &shorturl.Url{}
 	h := handlers.NewHandler(svc, shortener)
 	r := router.RegisterRouter(h)

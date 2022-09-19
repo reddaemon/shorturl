@@ -36,7 +36,7 @@ func TestSet(t *testing.T) {
 		_ = db.Close()
 	}()
 
-	repo := NewRepo(db)
+	repo := NewRepository(db)
 
 	for i, e := range setTests {
 		query := "INSERT INTO urls(shortUrl,fullUrl,created) VALUES(?,?,?)"
@@ -61,7 +61,7 @@ func TestGet(t *testing.T) {
 		_ = db.Close()
 	}()
 
-	repo := NewRepo(db)
+	repo := NewRepository(db)
 
 	for _, e := range getTests {
 		query := "SELECT fullUrl FROM urls WHERE shortUrl = ?"

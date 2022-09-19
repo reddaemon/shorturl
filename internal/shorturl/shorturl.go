@@ -22,19 +22,19 @@ type Url struct {
 }
 
 func (ur Url) Shorten(url string) (string, string, error) {
-	var sbUrl strings.Builder
-	var sbShrlnk strings.Builder
+	var builtUrl strings.Builder
+	var builtShortLink strings.Builder
 
 	if !strings.Contains(url, "//") {
-		sbUrl.WriteString("https://")
-		sbUrl.WriteString(url)
+		builtUrl.WriteString("https://")
+		builtUrl.WriteString(url)
 	} else {
-		sbUrl.WriteString(url)
+		builtUrl.WriteString(url)
 	}
 
-	temp, err := u.Parse(sbUrl.String())
+	temp, err := u.Parse(builtUrl.String())
 	if err != nil {
-		return "", sbUrl.String(), errors.Wrapf(err, "cannot parse url")
+		return "", builtUrl.String(), errors.Wrapf(err, "cannot parse url")
 	}
 
 	log.Printf("temp: %s", temp)
@@ -53,13 +53,13 @@ func (ur Url) Shorten(url string) (string, string, error) {
 		return "", "", errors.Wrapf(err, "cannot get hash")
 	}
 
-	shrtlnk, _ := hashId.Encode(hashSlice)
-	sbShrlnk.WriteString(ur.Scheme)
-	sbShrlnk.WriteString("://")
-	sbShrlnk.WriteString(ur.Host)
-	sbShrlnk.WriteString("/")
-	sbShrlnk.WriteString(shrtlnk)
+	shortLink, _ := hashId.Encode(hashSlice)
+	builtShortLink.WriteString(ur.Scheme)
+	builtShortLink.WriteString("://")
+	builtShortLink.WriteString(ur.Host)
+	builtShortLink.WriteString("/")
+	builtShortLink.WriteString(shortLink)
 
-	log.Printf("Result string: %s", sbShrlnk.String())
-	return sbShrlnk.String(), sbUrl.String(), err
+	log.Printf("Result string: %s", builtShortLink.String())
+	return builtShortLink.String(), builtUrl.String(), err
 }
