@@ -8,7 +8,7 @@ import (
 
 	"shorturl/internal/utils"
 
-	"github.com/speps/go-hashids"
+	"github.com/speps/go-hashids/v2"
 )
 
 type ShortenTool interface {
