@@ -27,6 +27,7 @@ func main() {
 	database := db.InitDB()
 	defer func() {
 		_ = database.Close()
+        // todo добавить логирование ворнинга при закрытии
 	}()
 
 	if err := goose.SetDialect("sqlite3"); err != nil {
